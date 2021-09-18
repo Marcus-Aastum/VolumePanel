@@ -46,7 +46,7 @@ import time
 time.sleep(2)    #wait for the Serial to initialize
 
 SPOTIFY_GET_CURRENT_TRACK_URL = 'https://api.spotify.com/v1/me/player/'
-ACCESS_TOKEN = input("Input your Spotifu OAuth token:\n")
+ACCESS_TOKEN = input("Input your Spotify OAuth token:\n")
 
 #Getting song and artist info
 def get_current_track(ACCESS_TOKEN):
