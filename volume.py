@@ -70,10 +70,10 @@ def get_current_track(ACCESS_TOKEN):
 current_track_id = None
 starttime = time.time()
 startit = False
+timeout = time.time()
 
 while True:
 
-        timeout = time.time()
         if time.time() - timeout > 3600:
             ACCESS_TOKEN = input("Input your Spotify OAuth token:\n")
         #Reads data from arduino, and assigns it to variables
