@@ -7,14 +7,7 @@ from comtypes import CLSCTX_ALL
 from pycaw.pycaw import AudioUtilities, IAudioEndpointVolume
 from serial.serialutil import SerialException
 
-try:
-    board = pyfirmata.Arduino('COM4')
-    it = pyfirmata.util.Iterator(board)
-    it.start()
-except SerialException:
-    print("Error 10, Serial can't open")
-    input()
-    exit()
+#Initialize Windows Audio utility
 try:
     devices = AudioUtilities.GetSpeakers()
     interface = devices.Activate(IAudioEndpointVolume._iid_, CLSCTX_ALL, None)
@@ -24,15 +17,10 @@ try:
     volume.GetVolumeRange()
 except:
     print("Error 30, Win Volume can't initialize")
-#print("volume.GetMasterVolume(): %s" % volume.GetMasterVolumeLevel())
-#volume.SetMasterVolumeLevel(0.6, None)
-#print("volume.GetMasterVolume(): %s" % volume.GetMasterVolumeLevel())
-#volume.SetMasterVolumeLevel(.10, None)
-analog_input = board.get_pin('a:0:i')
-but1 = board.get_pin("d:2:i")
-but2 = board.get_pin("d:7:i")
-print(volume.GetChannelCount())
+
 x = 0
+
+#Disable pyautogui's automatic deactivation when mouse is in a corner
 pyautogui.FAILSAFE = False
 
 import requests
@@ -42,7 +30,8 @@ from pprint import pprint
 import serial
 import time
 
-#s = serial.Serial("COM4", 9600) #port is 11 (for COM12, and baud rate is 9600
+#Start the serial connection
+s = serial.Serial("COM4", 115200) 
 time.sleep(2)    #wait for the Serial to initialize
 
 SPOTIFY_GET_CURRENT_TRACK_URL = 'https://api.spotify.com/v1/me/player/'
@@ -60,7 +49,6 @@ def get_current_track(ACCESS_TOKEN):
         json_resp = response.json()
 
         track_id = json_resp['item']['id']
-        print(track_id)
         track_name = json_resp['item']['name']
         artists = [artist for artist in json_resp['item']['artists']]
 
@@ -78,101 +66,87 @@ def get_current_track(ACCESS_TOKEN):
     except:
         current_track_info = {"id": "Error", "track_name": "Error", "artists": "Error", "link": "Error"}
         return current_track_info
+#Declaring variables to be used
 current_track_id = None
+starttime = time.time()
+startit = False
+
 while True:
-    #Reads potentiometer value, and assigns it
-    analog_value = analog_input.read()
+        #Reads data from arduino, and assigns it to variables
+        everysplit = s.readline().decode("utf-8")
+        play = everysplit[0]
+        skip = everysplit[1]
+        vol = everysplit[2:-1]
 
-    #Plays or pauses if a button is pressed
-    if analog_value != None:
-        if but1.read() == True:
-            pyautogui.press("playpause")
-            time.sleep(.5)    
+        #Debugprint:
+        #print(f"Playstate: {play} Skipstate: {skip} Volume: {vol}")
 
-        #Detects if a long OR short press is performed
-        elif but2.read() == True:
-            time.sleep(.5)
-            x += 1
-        #Skips to next/previous track when button 2 is released
-        else:
-            try:
-                if x == 1:
-                    pyautogui.press("nexttrack")
-                    x = 0
-                elif x == 2:
-                    pyautogui.press("prevtrack")
-                    x = 0
-            except:
-                print("Error 40: Can't press play/skip")
+        #Plays or pauses if a button is pressed
+        if vol != None:
+            if play == "1":
+                pyautogui.press("playpause")
+                time.sleep(.5)    
 
-            #
-            try:
-                volume.SetMasterVolumeLevel(analog_value * -36, None)
-            except:
-                print("Error 31: Can't set volume")
-        print(f"Volume: {round((1 - analog_value)*100)}% Button 1: ", but1.read(), "Button 2: ", but2.read())
+            #Detects if a long OR short press is performed
+            elif skip == "1":
+                time.sleep(.2)
+                x += 1
+            #Skips to next/previous track when button 2 is released
+            else:
+                try:
+                    if x == 1:
+                        pyautogui.press("nexttrack")
+                        x = 0
+                    elif x >= 2:
+                        pyautogui.press("prevtrack")
+                        x = 0
+                    else:
+                        x = 0
+                except:
+                    print("Error 40: Can't press play/skip")
 
+                #Sets volume
+                try:
+                    volume.SetMasterVolumeLevel((int(vol)/1023) * -36, None)
+                except:
+                    print("Error 31: Can't set volume")
+
+        #Reading playback data
         current_track_info = get_current_track(ACCESS_TOKEN)
-     
-        
-        if current_track_info['id'] != current_track_id:
-        
-              
-        
-             pprint(current_track_info, indent=4,)
-        
-             current_track_id = current_track_info['id']
-        
-                 
-        
-        #     str = current_track_info["track_name"]
-        #
-        #     str = str.strip()
-        #
-        #     str = str.encode()
-        #
-        #      
-        #
-        #     #s.write(str)
-        #
-        #     #time.sleep(6)
-        #
-        #     str = current_track_info["artists"]
-        #
-        #     str = str.strip()
-        #
-        #     str = str.encode()
-        #
-        #     #s.write(str)
-        #
-        #     #time.sleep(6)
-        #
-        #     str = current_track_info["track_name"]
-        #
-        #     str = str.strip()
-        #
-        #     str = str.encode()
 
+        #Starts a timer if the last timer has elapsed             
+        if startit == True:            
+            starttime = time.time()
+            startit = False
 
-        
-        #     #s.write(str)
-        #
-        #     #time.sleep(6)
-        #
-        #     str = current_track_info["artists"]
-        #
-        #     str = str.strip()
-        #
-        #     str = str.encode()
-        #
-        #     #s.write(str)
-        #
-        #     #time.sleep(6)
-        #
-        #     str = current_track_info["track_name"]
-        #
-        #     str = str.strip()
-        #
-        #     str = str.encode()
-
-            #s.write(str)
+        #Writes the songname or artist
+        if (time.time() - starttime) > 0 and time.time() - starttime < 6:
+           str = current_track_info["track_name"]
+           str = str.strip()
+           str = str.encode()
+           s.write(str)
+                #time.sleep(6)
+        elif (time.time() - starttime) > 6 and time.time() - starttime < 12:
+           str = current_track_info["artists"]
+           str = str.strip()
+           str = str.encode()
+           s.write(str)
+                #time.sleep(6)
+        elif (time.time() - starttime) > 12 and time.time() - starttime < 18:
+           str = current_track_info["track_name"]
+           str = str.strip()
+           str = str.encode()
+           s.write(str)
+                #time.sleep(6)
+        elif (time.time() - starttime) > 18 and time.time() - starttime < 24:
+           str = current_track_info["artists"]
+           str = str.strip()
+           str = str.encode()
+           s.write(str)
+                #time.sleep(6)
+        elif (time.time() - starttime) > 24:
+           str = current_track_info["track_name"]
+           str = str.strip()
+           str = str.encode()
+           s.write(str)
+           startit = True
