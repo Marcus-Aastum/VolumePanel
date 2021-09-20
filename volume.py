@@ -73,9 +73,10 @@ startit = False
 timeout = time.time()
 
 while True:
-
+        #Request new token after the previous has run out
         if time.time() - timeout > 3600:
             ACCESS_TOKEN = input("Input your Spotify OAuth token:\n")
+            timeout = time.time()
         #Reads data from arduino, and assigns it to variables
         everysplit = s.readline().decode("utf-8")
         play = everysplit[0]
