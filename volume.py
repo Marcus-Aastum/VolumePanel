@@ -64,7 +64,7 @@ def get_current_track(ACCESS_TOKEN):
         }
         return current_track_info
     except:
-        current_track_info = {"id": "Error", "track_name": "Error", "artists": "Error", "link": "Error"}
+        current_track_info = {"id": "Error", "track_name": "_", "artists": "_", "link": "Error"}
         return current_track_info
 #Declaring variables to be used
 current_track_id = None
