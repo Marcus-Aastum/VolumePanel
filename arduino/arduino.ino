@@ -22,6 +22,9 @@ void loop() {
   int skipread = digitalRead(skip);
   int volumeread = analogRead(volume);
 
+  int linenr;
+  char serial_byte;
+
   //Transmits sensor info
   Serial.print(playpauseread);
   Serial.print(skipread);
@@ -33,10 +36,19 @@ void loop() {
     lcd.clear();
     
     //Writes on the lcd
-    while (Serial.available() > 0) {
-      //char c = Serial.read();
-      char c = Serial.read();
-      lcd.write(c);
-    }
+    while (Serial.available() > 0)
+  {
+    serial_byte = Serial.read();
+    switch (serial_byte) {
+        case '\1':
+        lcd.setCursor(0,1);
+        break;
+        case '\0':
+        lcd.setCursor(0,0);
+        break;
+        default:
+        lcd.print(char(serial_byte));
   }
+}
+}
 }

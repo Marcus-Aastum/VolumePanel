@@ -125,33 +125,21 @@ while True:
             startit = False
 
         #Writes the songname or artist
-        if (time.time() - starttime) > 0 and time.time() - starttime < 6:
-           str = current_track_info["track_name"]
-           str = str.strip()
-           str = str.encode()
-           s.write(str)
-                #time.sleep(6)
-        elif (time.time() - starttime) > 6 and time.time() - starttime < 12:
-           str = current_track_info["artists"]
-           str = str.strip()
-           str = str.encode()
-           s.write(str)
-                #time.sleep(6)
-        elif (time.time() - starttime) > 12 and time.time() - starttime < 18:
-           str = current_track_info["track_name"]
-           str = str.strip()
-           str = str.encode()
-           s.write(str)
-                #time.sleep(6)
-        elif (time.time() - starttime) > 18 and time.time() - starttime < 24:
-           str = current_track_info["artists"]
-           str = str.strip()
-           str = str.encode()
-           s.write(str)
-                #time.sleep(6)
-        elif (time.time() - starttime) > 24:
-           str = current_track_info["track_name"]
-           str = str.strip()
-           str = str.encode()
-           s.write(str)
-           startit = True
+        
+        str = current_track_info["track_name"]
+        str = str.strip()
+        str = str.encode()
+        s.write(str)
+        str = "\1"
+        str=str.strip()
+        str=str.encode()
+        s.write(str)
+    
+        str = current_track_info["artists"]
+        str = str.strip()
+        str = str.encode()
+        s.write(str)
+        str = "\0"
+        str=str.strip()
+        str=str.encode()
+        s.write(str)
